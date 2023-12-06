@@ -3,11 +3,7 @@ use regex::Regex;
 use std::cmp::{min, PartialEq};
 use std::collections::{HashMap, VecDeque};
 use std::fs::read_to_string;
-use std::ops::{Add, Rem};
-
-trait Progress {
-    fn progress(&self) {}
-}
+use std::ops::Add;
 
 struct ParseContext {
     seeds: Regex,
@@ -128,12 +124,7 @@ where
             }
         };
     }
-}
 
-impl<T> Progress for MultiRangeIterator<T>
-where
-    T: Rem<u64, Output = u64>,
-{
     fn progress(&self) {
         if self.calls % 1000000u64 == 0 {
             println!("{} - {}%", self.calls, 100 * self.calls / self.total);
@@ -143,7 +134,7 @@ where
 
 impl<T> Iterator for MultiRangeIterator<T>
 where
-    T: Copy + PartialEq + Add<u64, Output = T> + Rem<u64, Output = u64>,
+    T: Copy + PartialEq + Add<u64, Output = T>,
 {
     type Item = T;
 
