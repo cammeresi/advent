@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use num::One;
 use regex::Regex;
 use std::cmp::{min, PartialEq};
 use std::collections::{HashMap, VecDeque};
@@ -31,6 +32,7 @@ struct MapSet<'a> {
 
 struct MultiRangeIterator<T> {
     starts: VecDeque<T>,
+    stops: VecDeque<T>,
     lens: VecDeque<u64>,
     next: Option<T>,
     stop: Option<T>,
@@ -95,11 +97,12 @@ impl<'a> MapSet<'a> {
 
 impl<T> MultiRangeIterator<T>
 where
-    T: Copy + PartialEq + Add<u64, Output = T>,
+    T: Copy + PartialEq,
 {
     fn new() -> MultiRangeIterator<T> {
         MultiRangeIterator {
             starts: VecDeque::new(),
+            stops: VecDeque::new(),
             lens: VecDeque::new(),
             next: None,
             stop: None,
@@ -108,9 +111,10 @@ where
         }
     }
 
-    fn add(&mut self, start: T, len: u64) {
+    fn add(&mut self, start: T, stop: T, len: u64) {
         assert!(self.next.is_none());
         self.starts.push_back(start);
+        self.stops.push_back(stop);
         self.lens.push_back(len);
         self.total = self.lens.iter().sum();
     }
@@ -120,7 +124,7 @@ where
             None => self.next = None,
             Some(x) => {
                 self.next = Some(x);
-                self.stop = Some(x + self.lens.pop_front().unwrap());
+                self.stop = Some(self.stops.pop_front().unwrap());
             }
         };
     }
@@ -134,7 +138,7 @@ where
 
 impl<T> Iterator for MultiRangeIterator<T>
 where
-    T: Copy + PartialEq + Add<u64, Output = T>,
+    T: Copy + PartialEq + Add<Output = T> + One,
 {
     type Item = T;
 
@@ -151,7 +155,7 @@ where
             None => None,
             Some(n) => {
                 self.calls += 1;
-                self.next = Some(n + 1);
+                self.next = Some(n + One::one());
                 self.progress();
                 Some(n)
             }
@@ -225,7 +229,7 @@ fn process2(input: &String) -> u64 {
     let maps = parse(input);
     let mut seeds = MultiRangeIterator::new();
     for x in maps.seeds.chunks(2) {
-        seeds.add(x[0], x[1]);
+        seeds.add(x[0], x[0] + x[1], x[1]);
     }
     run(seeds, &maps)
 }
