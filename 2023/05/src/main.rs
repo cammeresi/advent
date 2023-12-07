@@ -163,7 +163,7 @@ where
     }
 }
 
-fn parse<'a>(input: &'a String) -> MapSet<'a> {
+fn parse(input: &String) -> MapSet {
     let mut input = input.lines();
     let ctx = ParseContext::new();
     let mut set = MapSet::new();
@@ -196,7 +196,7 @@ fn parse<'a>(input: &'a String) -> MapSet<'a> {
     set
 }
 
-fn run<'a, I>(seeds: I, maps: &'a MapSet) -> u64
+fn run<I>(seeds: I, maps: &MapSet) -> u64
 where
     I: Iterator<Item = u64>,
 {
